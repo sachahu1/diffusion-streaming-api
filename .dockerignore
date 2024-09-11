@@ -1,0 +1,10 @@
+*
+**
+!docs
+!tests
+!diffusion_streaming_api
+!README.md
+!pyproject.toml
+!poetry.lock
+
+!new_checkpoint.pt
