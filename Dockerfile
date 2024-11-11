@@ -35,11 +35,12 @@ FROM python-base-image as build-env
 # copy in code
 COPY poetry.lock pyproject.toml README.md $work_dir/
 
-RUN poetry install --only main --no-ansi --no-interaction --no-root
+RUN poetry install --only main --no-ansi --no-interaction --no-root --no-cache
 
 COPY diffusion_streaming_api $work_dir/diffusion_streaming_api
 
-RUN poetry install --only main --no-ansi --no-interaction
+RUN poetry install --only main --no-ansi --no-interaction --no-cache
+RUN poetry run pip uninstall -y transformers huggingface_hub tensorboard_data_server tensorboard pip
 
 FROM build-env as tests
 
@@ -66,7 +67,20 @@ RUN poetry run sphinx-apidoc --separate -f -o docs/source/ . test/*
 RUN cd docs && make html
 
 
-FROM build-env as lambda
+FROM python:3.10-slim-bookworm as lambda
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PATH="/root/.local/bin:$PATH" \
+    SETUPTOOLS_USE_DISTUTILS=stdlib\
+    work_dir=/function
+# Set up work directory
+WORKDIR $work_dir
+
+ENV VIRTUAL_ENV=$work_dir/.venv \
+    PATH="$work_dir/.venv/bin:$PATH"
+
+COPY --from=build-env $work_dir/.venv $work_dir/.venv
+COPY --from=build-env $work_dir/diffusion_streaming_api $work_dir/diffusion_streaming_api
 
 RUN pip install awslambdaric --target $work_dir
 

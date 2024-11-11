@@ -12,12 +12,12 @@ repository = "https://github.com/sachahu1/diffusion-streaming-api"
 
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
-pillow = "^10.4.0"
+python = ">=3.10,<3.13"
+pillow = "^11.0.0"
 torch = {version = "^2.4.0+cpu", source = "pytorch_cpu"}
-torchvision = {version = "^0.19.0+cpu", source = "pytorch_cpu"}
-diffusion-model-framework = {version = "^0.1.2rc3", allow-prereleases = true}
-fastapi = {extras = ["standard"], version = "^0.112.1"}
+torchvision = {version = "^0.20.0+cpu", source = "pytorch_cpu"}
+fastapi = {extras = ["standard"], version = "^0.115.4"}
+diffusion-model-framework = "^1.0.0"
 
 [tool.poetry.group.dev]
 optional = true
