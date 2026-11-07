@@ -1,12 +1,13 @@
 import asyncio
+from typing import Annotated
+from typing import Generator
 
 from diffusion_models.diffusion_inference import DiffusionInference
-from diffusion_models.gaussian_diffusion.gaussian_diffuser import (
-  GaussianDiffuser,
-)
+from diffusion_models.gaussian_diffusion.ddimm_diffuser import DdimDiffuser
 from diffusion_models.models.SimpleUnet import SimpleUnet
 from diffusion_models.utils.schemas import Checkpoint
 from fastapi import APIRouter
+from fastapi import Depends
 from starlette.responses import StreamingResponse
 from torchvision.transforms import v2
 
@@ -16,14 +17,14 @@ from diffusion_streaming_api.utils.image import image_to_bytes
 diffusion_router = APIRouter()
 
 
-def get_generator():
+async def get_generator() -> Generator:
   checkpoint_file_path = "new_checkpoint.pt"
 
   checkpoint = Checkpoint.from_file(checkpoint_file_path, map_location="cpu")
-  gaussian_diffuser = GaussianDiffuser.from_checkpoint(checkpoint)
+  diffuser = DdimDiffuser.from_checkpoint(checkpoint)
 
   model = SimpleUnet(
-    image_channels=checkpoint.image_channels, diffuser=gaussian_diffuser
+    image_channels=checkpoint.image_channels, diffuser=diffuser
   )
   model.load_state_dict(checkpoint.model_state_dict)
 
@@ -42,14 +43,12 @@ def get_generator():
 
 
 @diffusion_router.get("/newImage")
-async def generate_new_image():
+async def generate_new_image(generator: Annotated[Generator, Depends(get_generator)]):
   """
 
   Returns:
 
   """
-  generator = get_generator()
-
   async def image_to_io():
     for image in generator:
       image_bytes = image_to_bytes(image)
