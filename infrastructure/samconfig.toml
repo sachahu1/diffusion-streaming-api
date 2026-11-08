@@ -1,0 +1,21 @@
+version = 0.1
+[default.build.parameters]
+template_file = "./cfn.yml"
+
+
+[prod]
+[prod.deploy]
+[prod.deploy.parameters]
+stack_name = "Diffusion-api"
+
+confirm_changeset = false
+capabilities = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"]
+parameter_overrides = [
+    "DiffusionApiLambdaDockerTag=diffusion-api:cpu"
+]
+image_repositories = [
+]
+profile = "mindspark"
+region = "eu-west-2"
+
+tags = "Name=\"DiffusionApi\""
