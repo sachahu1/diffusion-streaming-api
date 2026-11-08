@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Cloudformation infrastructure for the diffusion api
+
+Parameters:
+  DiffusionApiLambdaDockerTag:
+    Type: String
+
+Resources:
+  DiffusionLambdaStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./application/diffusion-api-lambda.yml
+      Parameters:
+        DockerTag: !Ref DiffusionApiLambdaDockerTag
+
+#  DiffusionCloudfrontStack:
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL: ./cloudfront/cloudfront-distribution.yaml
+#      Parameters:
+#        LambdaExecutionUrl: !GetAtt DiffusionLambdaStack.Outputs.

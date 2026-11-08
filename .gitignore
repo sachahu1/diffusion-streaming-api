@@ -150,3 +150,5 @@ auth.toml
 # Exclude all RST files appart from index.rst
 *.rst
 !index.rst
+
+new_checkpoint.pt

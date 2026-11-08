@@ -107,3 +107,26 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:tool.poetry.version"]
+tag_format = "v{version}"
+commit_parser = "conventional"
+commit_message = "chore(release): {version}"
+allow_zero_version = true
+major_on_zero = false
+# The app ships as a container, so there is nothing to build or upload.
+build_command = ""
+
+[tool.semantic_release.remote]
+type = "github"
+upload_to_vcs_release = false
+
+[tool.semantic_release.branches.main]
+match = "main"
+prerelease = false
+
+[tool.semantic_release.branches.dev]
+match = "dev"
+prerelease = true
+prerelease_token = "rc"

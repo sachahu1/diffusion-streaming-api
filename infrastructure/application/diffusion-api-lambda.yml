@@ -1,0 +1,109 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: Cloudformation infrastructure for the lambda containing the api code
+
+Parameters:
+  DockerTag:
+    Type: String
+
+Resources:
+
+  ModelWeightsAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "s3:GetObject"
+            Resource: "arn:aws:s3:::sachahu.com/model-weights/*"
+
+  AllLogsAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "logs:*"
+            Resource: "arn:aws:logs:*:*:*"
+
+  DiffusionApiLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref AllLogsAccessPolicy
+        - !Ref ModelWeightsAccessPolicy
+      RoleName: !Join ["-", ["DiffusionApiLambdaRole"]]
+
+  DiffusionApiLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageUri: !Join ["", [!Ref AWS::AccountId, ".dkr.ecr.", !Ref AWS::Region,".amazonaws.com/", !Ref DockerTag]]
+      Timeout: 300
+      Role: !GetAtt DiffusionApiLambdaRole.Arn
+      MemorySize: 3008
+      Environment:
+        Variables:
+          AWS_LWA_INVOKE_MODE: RESPONSE_STREAM
+          AWS_LWA_ASYNC_INIT: true
+      FunctionUrlConfig:
+        AuthType: AWS_IAM
+        InvokeMode: RESPONSE_STREAM
+        Cors:
+          AllowOrigins:
+            - https://www.sachahu.com
+
+  Permission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunctionUrl
+      FunctionName: !Ref DiffusionApiLambda
+      FunctionUrlAuthType: AWS_IAM
+      Principal: cloudfront.amazonaws.com
+      SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${DiffusionCloudfrontDistribution}
+
+  CloudfrontOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Description: An optional description for the origin access control
+        Name: LambdaOAC
+        OriginAccessControlOriginType: lambda
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  DiffusionCloudfrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        DefaultCacheBehavior:
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+          TargetOriginId: DiffusionLambdaOrigin
+          ViewerProtocolPolicy: redirect-to-https
+        Origins:
+          - DomainName: !Select [2, !Split ["/", !GetAtt DiffusionApiLambdaUrl.FunctionUrl]]
+            Id: DiffusionLambdaOrigin
+            OriginAccessControlId: !GetAtt CloudfrontOAC.Id
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols: [ TLSv1.2 ]
+        Enabled: true
+
+
+Outputs:
+  LambdaExecutionUrl:
+    Value: !GetAtt DiffusionApiLambdaUrl.FunctionUrl
+    Description: The Domain Name of the cloudfront distribution

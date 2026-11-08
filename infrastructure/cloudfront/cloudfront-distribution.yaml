@@ -1,0 +1,33 @@
+#AWSTemplateFormatVersion: 2010-09-09
+#Transform: AWS::Serverless-2016-10-31
+#Description: Cloudformation infrastructure for the lambda containing the api code
+#
+#Parameters:
+#  LambdaExecutionUrl:
+#    Type: String
+#
+#Resources:
+#
+#  CloudfrontOAC:
+#    Type: AWS::CloudFront::OriginAccessControl
+#    Properties:
+#      OriginAccessControlConfig:
+#        Description: An optional description for the origin access control
+#        Name: LambdaOAC
+#        OriginAccessControlOriginType: lambda
+#        SigningBehavior: always
+#        SigningProtocol: sigv4
+#
+#  DiffusionCloudfrontDistribution:
+#    Type: AWS::CloudFront::Distribution
+#    Properties:
+#      DistributionConfig:
+#        DefaultCacheBehavior:
+#          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+#          TargetOriginId: DiffusionLambdaOrigin
+#          ViewerProtocolPolicy: redirect-to-https
+#        Origins:
+#          - DomainName: !Ref LambdaExecutionUrl
+#            Id: DiffusionLambdaOrigin
+#            OriginAccessControlId: !GetAtt CloudfrontOAC.Id
+#
