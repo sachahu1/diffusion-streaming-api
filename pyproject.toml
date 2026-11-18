@@ -117,8 +117,9 @@ commit_parser = "conventional"
 commit_message = "chore(release): {version}"
 allow_zero_version = true
 major_on_zero = false
-# The app ships as a container, so there is nothing to build or upload.
-build_command = ""
+# Keeps uv.lock in sync with the bumped project version.
+build_command = "uv lock"
+assets = ["uv.lock"]
 
 [tool.semantic_release.remote]
 type = "github"
