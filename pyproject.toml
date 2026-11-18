@@ -117,9 +117,7 @@ commit_parser = "conventional"
 commit_message = "chore(release): {version}"
 allow_zero_version = true
 major_on_zero = false
-# uv.lock records the project version, so refresh it after the version bump to
-# keep `uv sync --locked` working. The release workflow runs this on the runner,
-# where uv is installed.
+# Keeps uv.lock in sync with the bumped project version.
 build_command = "uv lock"
 assets = ["uv.lock"]
 

@@ -32,11 +32,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
 
-      # Runs on the runner rather than via the semantic-release action, which
-      # executes in a container without uv. `build_command` in pyproject.toml
-      # runs `uv lock` so uv.lock is committed with the version bump.
-      # main -> stable release (vX.Y.Z), dev -> release candidate (vX.Y.Z-rc.N)
-      # Branch rules live in [tool.semantic_release] in pyproject.toml.
+      # main -> stable release, dev -> release candidate; run on the runner so uv is available.
       - name: Python Semantic Release
         id: release
         env:
@@ -46,7 +42,7 @@ jobs:
           git config user.email "semantic-release"
           before=$(git rev-parse HEAD)
           uvx --from python-semantic-release==10.7.0 semantic-release -v version
-          # A release adds the version commit and tag; otherwise HEAD is unchanged.
+          # A release moves HEAD (version commit + tag).
           if [[ "$(git rev-parse HEAD)" != "$before" ]]; then
             tag=$(git describe --tags --exact-match HEAD)
             echo "released=true" >> "$GITHUB_OUTPUT"
