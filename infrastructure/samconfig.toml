@@ -1,0 +1,21 @@
+version = 0.1
+[default.build.parameters]
+template_file = "./cfn.yaml"
+
+
+[prod]
+[prod.deploy]
+[prod.deploy.parameters]
+stack_name = "Diffusion-api"
+
+confirm_changeset = false
+capabilities = ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"]
+parameter_overrides = [
+    "DiffusionApiLambdaDockerTag=diffusion-api:cpu",
+    "GitHubOidcProviderArn=arn:aws:iam::980416368045:oidc-provider/token.actions.githubusercontent.com"
+]
+image_repositories = [
+]
+region = "eu-west-2"
+
+tags = "Name=\"DiffusionApi\""

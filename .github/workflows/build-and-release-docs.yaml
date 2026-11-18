@@ -1,0 +1,60 @@
+name: Build And Release Docs
+
+on:
+  # Called directly by the release workflow after a new version is tagged.
+  workflow_call:
+    inputs:
+      ref:
+        description: Git ref (e.g. the release tag) to build the docs from.
+        type: string
+        required: true
+  # Manual runs build from the selected branch.
+  workflow_dispatch:
+
+env:
+  AWS_REGION: eu-west-2
+  AWS_OIDC_ROLE_ARN: arn:aws:iam::980416368045:role/GitHubAction-AssumeRoleWithAction
+  DOCS_UPLOAD_URI: s3://sachahu.com/docs/diffusion-streaming-api
+
+jobs:
+
+  build-release-docs:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # This is required for requesting the JWT
+      contents: read    # This is required for actions/checkout
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          fetch-depth: 0
+      - name: Set up python
+        id: setup-python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.12"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --locked --no-default-groups --group documentation
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ env.AWS_OIDC_ROLE_ARN }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Build and Deploy docs
+        run: |
+          uv run --no-sync sphinx-build -M html docs/source/ docs/build
+
+          aws s3 sync docs/build/html ${{ env.DOCS_UPLOAD_URI }}/pages/v$(uv version --short) --delete
+
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            aws s3 sync docs/build/html ${{ env.DOCS_UPLOAD_URI }}/latest --delete
+          fi
+
+          rm -rf docs/build
