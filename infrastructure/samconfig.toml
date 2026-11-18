@@ -15,7 +15,6 @@ parameter_overrides = [
 ]
 image_repositories = [
 ]
-profile = "mindspark"
 region = "eu-west-2"
 
 tags = "Name=\"DiffusionApi\""
