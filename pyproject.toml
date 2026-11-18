@@ -117,8 +117,15 @@ commit_parser = "conventional"
 commit_message = "chore(release): {version}"
 allow_zero_version = true
 major_on_zero = false
-# The app ships as a container, so there is nothing to build or upload.
-build_command = ""
+# The app ships as a container, so there is nothing to build or upload. The
+# only build step is refreshing uv.lock, which records the project version, so
+# the version bump commit stays consistent with `uv sync --locked`.
+build_command = """
+  pip install -q uv
+  uv lock --upgrade-package diffusion-streaming-api
+"""
+# Commit the refreshed lockfile together with the version bump.
+assets = ["uv.lock"]
 
 [tool.semantic_release.remote]
 type = "github"
