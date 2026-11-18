@@ -144,7 +144,7 @@ cython_debug/
 # Sphinx
 docs/build/
 
-# Local docker image with poetry
+# Local docker image with uv
 auth.toml
 
 # Exclude all RST files appart from index.rst
@@ -152,3 +152,4 @@ auth.toml
 !index.rst
 
 new_checkpoint.pt
+.aws-sam/

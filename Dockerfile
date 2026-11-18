@@ -7,10 +7,10 @@ ENV DEBIAN_FRONTEND=noninteractive \
     SETUPTOOLS_USE_DISTUTILS=stdlib\
     work_dir=/function
 
-ENV POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=1 \
-    POETRY_VIRTUALENVS_CREATE=1 \
-    POETRY_CACHE_DIR=/tmp/poetry_cache
+ENV UV_PROJECT_ENVIRONMENT=$work_dir/.venv \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never \
+    UV_COMPILE_BYTECODE=1
 
 ENV VIRTUAL_ENV=$work_dir/.venv \
     PATH="$work_dir/.venv/bin:$PATH"
@@ -18,14 +18,11 @@ ENV VIRTUAL_ENV=$work_dir/.venv \
 RUN apt-get update && apt-get upgrade -y
 
 # Install Pillow-SIMD system dependencies
-RUN apt-get install --no-install-recommends -y libjpeg-dev zlib1g-dev gcc
-
-# Install poetry
-RUN apt-get install -y --no-install-recommends curl && \
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python get-pip.py && \
-    curl -sSL https://install.python-poetry.org | python3 - && \
-    apt-get purge -y curl && \
+RUN apt-get install --no-install-recommends -y libjpeg-dev zlib1g-dev gcc && \
     rm -rf /var/lib/apt/lists/*
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:0.9 /uv /uvx /bin/
 
 # Set up work directory
 WORKDIR $work_dir
@@ -33,21 +30,20 @@ WORKDIR $work_dir
 FROM python-base-image as build-env
 
 # copy in code
-COPY poetry.lock pyproject.toml README.md $work_dir/
+COPY uv.lock pyproject.toml README.md $work_dir/
 
-RUN poetry install --only main --no-ansi --no-interaction --no-root --no-cache
+RUN uv sync --locked --no-default-groups --no-install-project
 
 COPY diffusion_streaming_api $work_dir/diffusion_streaming_api
 
-RUN poetry install --only main --no-ansi --no-interaction --no-cache
-RUN poetry run pip uninstall -y transformers huggingface_hub tensorboard_data_server tensorboard pip
+RUN uv sync --locked --no-default-groups --no-editable
 
 FROM build-env as tests
 
-RUN poetry install --without=test
+RUN uv sync --locked --no-default-groups --group test
 COPY tests $work_dir/tests
 
-CMD poetry run coverage run -m pytest ; coverage xml -o test_results/coverage.xml
+CMD uv run --no-sync coverage run -m pytest ; uv run --no-sync coverage xml -o test_results/coverage.xml
 
 FROM build-env as documentation
 
@@ -55,13 +51,13 @@ ENV SPHINX_APIDOC_OPTIONS=members
 
 # Install documentation dependencies
 RUN apt-get install --no-install-recommends -y make
-RUN poetry install --no-ansi --no-interaction --no-dev
+RUN uv sync --locked --no-default-groups --group documentation
 
 # Copy in documentation files
 COPY docs $work_dir/docs
 
 # Run Sphinx generation
-RUN poetry run sphinx-apidoc --separate -f -o docs/source/ . test/*
+RUN uv run --no-sync sphinx-apidoc --separate -f -o docs/source/ . test/*
 
 # Build HTML docs
 RUN cd docs && make html

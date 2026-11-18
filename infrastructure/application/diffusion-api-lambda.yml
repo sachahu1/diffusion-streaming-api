@@ -107,3 +107,9 @@ Outputs:
   LambdaExecutionUrl:
     Value: !GetAtt DiffusionApiLambdaUrl.FunctionUrl
     Description: The Domain Name of the cloudfront distribution
+  LambdaFunctionArn:
+    Value: !GetAtt DiffusionApiLambda.Arn
+    Description: ARN of the lambda the release workflow re-points
+  LambdaFunctionName:
+    Value: !Ref DiffusionApiLambda
+    Description: Name of the lambda (set as the LAMBDA_FUNCTION_NAME repo variable)
