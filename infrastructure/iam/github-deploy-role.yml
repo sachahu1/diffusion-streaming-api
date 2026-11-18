@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  IAM role assumed by GitHub Actions (via OIDC) to push the diffusion api image to ECR
+  and point the lambda at it. No long-lived AWS keys are stored in GitHub.
+
+Parameters:
+  GitHubRepository:
+    Type: String
+    Default: sachahu1/diffusion-streaming-api
+    Description: GitHub "owner/repo" allowed to assume the role.
+  GitHubBranch:
+    Type: String
+    Default: main
+    Description: Only workflow runs on this branch may assume the role.
+  GitHubOidcProviderArn:
+    Type: String
+    Description: ARN of the account's existing token.actions.githubusercontent.com OIDC provider.
+  EcrRepositoryName:
+    Type: String
+    Default: diffusion-api
+  LambdaFunctionArn:
+    Type: String
+  ModelWeightsArn:
+    Type: String
+    Default: arn:aws:s3:::sachahu.com/model-weights/*
+    Description: S3 objects the build may download to bake into the image.
+
+Resources:
+  DeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: DiffusionApiGitHubDeploy
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRoleWithWebIdentity
+            Principal:
+              Federated: !Ref GitHubOidcProviderArn
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubRepository}:ref:refs/heads/${GitHubBranch}
+      Policies:
+        - PolicyName: PushImageAndUpdateLambda
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: EcrLogin
+                Effect: Allow
+                Action: ecr:GetAuthorizationToken
+                Resource: "*"
+              - Sid: EcrPushPull
+                Effect: Allow
+                Action:
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:BatchGetImage
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:InitiateLayerUpload
+                  - ecr:UploadLayerPart
+                  - ecr:CompleteLayerUpload
+                  - ecr:PutImage
+                Resource: !Sub arn:${AWS::Partition}:ecr:${AWS::Region}:${AWS::AccountId}:repository/${EcrRepositoryName}
+              - Sid: UpdateLambdaImage
+                Effect: Allow
+                Action:
+                  - lambda:UpdateFunctionCode
+                  - lambda:GetFunctionConfiguration
+                Resource: !Ref LambdaFunctionArn
+              - Sid: DownloadModelWeights
+                Effect: Allow
+                Action: s3:GetObject
+                Resource: !Ref ModelWeightsArn
+
+Outputs:
+  DeployRoleArn:
+    Description: Role ARN used by the release workflow
+    Value: !GetAtt DeployRole.Arn

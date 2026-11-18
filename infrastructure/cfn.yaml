@@ -4,6 +4,9 @@ Description: Cloudformation infrastructure for the diffusion api
 Parameters:
   DiffusionApiLambdaDockerTag:
     Type: String
+  GitHubOidcProviderArn:
+    Type: String
+    Description: ARN of the account's existing token.actions.githubusercontent.com OIDC provider.
 
 Resources:
   DiffusionLambdaStack:
@@ -12,6 +15,14 @@ Resources:
       TemplateURL: ./application/diffusion-api-lambda.yml
       Parameters:
         DockerTag: !Ref DiffusionApiLambdaDockerTag
+
+  GitHubDeployRoleStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./iam/github-deploy-role.yml
+      Parameters:
+        GitHubOidcProviderArn: !Ref GitHubOidcProviderArn
+        LambdaFunctionArn: !GetAtt DiffusionLambdaStack.Outputs.LambdaFunctionArn
 
 #  DiffusionCloudfrontStack:
 #    Type: AWS::CloudFormation::Stack
