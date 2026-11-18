@@ -152,3 +152,4 @@ auth.toml
 !index.rst
 
 new_checkpoint.pt
+.aws-sam/
