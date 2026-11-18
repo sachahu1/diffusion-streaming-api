@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile
-FROM python:3.10-slim-bookworm as python-base-image
+FROM python:3.10-slim-bookworm AS python-base-image
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
@@ -27,7 +27,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.9 /uv /uvx /bin/
 # Set up work directory
 WORKDIR $work_dir
 
-FROM python-base-image as build-env
+FROM python-base-image AS build-env
 
 # copy in code
 COPY uv.lock pyproject.toml README.md $work_dir/
@@ -38,14 +38,14 @@ COPY diffusion_streaming_api $work_dir/diffusion_streaming_api
 
 RUN uv sync --locked --no-default-groups --no-editable
 
-FROM build-env as tests
+FROM build-env AS tests
 
 RUN uv sync --locked --no-default-groups --group test
 COPY tests $work_dir/tests
 
 CMD uv run --no-sync coverage run -m pytest ; uv run --no-sync coverage xml -o test_results/coverage.xml
 
-FROM build-env as documentation
+FROM build-env AS documentation
 
 ENV SPHINX_APIDOC_OPTIONS=members
 
@@ -63,7 +63,7 @@ RUN uv run --no-sync sphinx-apidoc --separate -f -o docs/source/ . test/*
 RUN cd docs && make html
 
 
-FROM python:3.10-slim-bookworm as lambda
+FROM python:3.10-slim-bookworm AS lambda
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     PATH="/root/.local/bin:$PATH" \
