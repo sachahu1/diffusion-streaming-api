@@ -2,6 +2,28 @@
 
 <!-- version list -->
 
+## v0.1.0-rc.3 (2026-11-18)
+
+### Bug Fixes
+
+- **docker**: Use uppercase AS in multi-stage FROM lines
+  ([`d3ce9e8`](https://github.com/sachahu1/diffusion-streaming-api/commit/d3ce9e865e45d12f50a0e92f96564d27bfbea2a3))
+
+### Continuous Integration
+
+- Refresh uv.lock as a semantic-release asset
+  ([`f2216f4`](https://github.com/sachahu1/diffusion-streaming-api/commit/f2216f4329e45355fb9a8faf253dbe5ba8c51547))
+
+- Run semantic-release on the runner so uv is available
+  ([`3b90137`](https://github.com/sachahu1/diffusion-streaming-api/commit/3b90137b5167b93538aa3e0d2998969b62c767d4))
+
+- Shorten comments
+  ([`cc6de9e`](https://github.com/sachahu1/diffusion-streaming-api/commit/cc6de9ec49e0aa010f26dedfa92d091e2c8cf27d))
+
+- Simplify release build command to uv lock
+  ([`1c394e7`](https://github.com/sachahu1/diffusion-streaming-api/commit/1c394e7a661977eaf9cdb062f9f8750cb89ed611))
+
+
 ## v0.1.0-rc.2 (2026-11-18)
 
 ### Build System
