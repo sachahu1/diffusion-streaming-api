@@ -5,6 +5,6 @@
 !diffusion_streaming_api
 !README.md
 !pyproject.toml
-!poetry.lock
+!uv.lock
 
 !new_checkpoint.pt

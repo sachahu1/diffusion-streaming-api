@@ -2,22 +2,22 @@
 
 
 ## Installation
-### Installing Poetry
-This tool uses poetry. If you already have poetry installed,
-please skip to the next section. Otherwise, let's first setup poetry.
+### Installing uv
+This tool uses [uv](https://docs.astral.sh/uv/). If you already have uv installed,
+please skip to the next section. Otherwise, let's first setup uv.
 
-To install poetry, simply run this command:
+To install uv, simply run this command:
 ```shell
-curl -sSL https://install.python-poetry.org | python3 -
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
-You can find out more about poetry installation [here](https://python-poetry.org/docs/master/#installation).
+You can find out more about uv installation [here](https://docs.astral.sh/uv/getting-started/installation/).
 
-That's it, poetry is set up.
+That's it, uv is set up.
 
 ### Installing the package
-Thanks to poetry, installing this package is very simple and can be done in a single command. Simply run:
+Thanks to uv, installing this package is very simple and can be done in a single command. Simply run:
 ```shell
-poetry install
+uv sync
 ```
 That's it, the package is installed. Move to the next section to learn how to use this package.
 

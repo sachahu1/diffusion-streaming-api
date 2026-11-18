@@ -20,40 +20,22 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       #----------------------------------------------
-      #  -----  install & configure poetry  -----
+      #  -----  install uv & dependencies  -----
       #----------------------------------------------
-      - name: Install Poetry
-        uses: snok/install-poetry@a783c322200f0519c7926aa6faa857c4e23e9263 # v1.4.2
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
         with:
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-      #----------------------------------------------
-      #       load cached venv if cache exists
-      #----------------------------------------------
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-      #----------------------------------------------
-      # install dependencies if cache does not exist
-      #----------------------------------------------
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root --with test
-      #----------------------------------------------
-      # install your root project, if required
-      #----------------------------------------------
-      - name: Install library
-        run: poetry install --no-interaction --with test
+        run: uv sync --locked --group test
       #----------------------------------------------
       #    add matrix specifics and run test suite
       #----------------------------------------------
       - name: Run tests
         run: |
-          poetry run coverage run -m pytest
-          poetry run coverage report
+          uv run --no-sync coverage run -m pytest
+          uv run --no-sync coverage report
 
   build-image:
     runs-on: ubuntu-latest
