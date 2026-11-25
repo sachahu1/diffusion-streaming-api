@@ -1,17 +1,17 @@
 import asyncio
+from collections.abc import Generator
 from threading import Lock
 from typing import Annotated
-from typing import Generator
 
-from diffusion_models.diffusion_inference import DiffusionInference
-from diffusion_models.utils.schemas import Checkpoint
+from diffusion_models.diffusion.diffusion_inference import DiffusionInference
+from diffusion_models.diffusion.schemas import Checkpoint
 from fastapi import APIRouter
 from fastapi import Depends
 from hydra.utils import instantiate
-from omegaconf import OmegaConf
 from starlette.responses import StreamingResponse
 from torchvision.transforms import v2
 
+from diffusion_streaming_api.utils.checkpoint import load_config
 from diffusion_streaming_api.utils.image import image_to_bytes
 
 
@@ -34,14 +34,12 @@ def get_inference() -> DiffusionInference:
 
 
 def _load_inference() -> DiffusionInference:
-  checkpoint = Checkpoint.from_file(CHECKPOINT_FILE_PATH, map_location="cpu")
-  if checkpoint.config_yaml is None:
-    raise ValueError(
-      "The checkpoint has no embedded config, so the model cannot be rebuilt."
-    )
+  checkpoint = Checkpoint.from_file(
+    CHECKPOINT_FILE_PATH, map_location="cpu", load_optimizer=False
+  )
   # The checkpoint carries the resolved config of the training run, so the
   # model, diffuser and beta scheduler are rebuilt exactly as they were trained.
-  config = OmegaConf.create(checkpoint.config_yaml)
+  config = load_config(checkpoint.config_yaml)
 
   model = instantiate(config.model)
   # The EMA weights give better samples than the raw ones.
@@ -72,20 +70,16 @@ async def get_generator() -> Generator:
   return inference.get_generator(number_of_images=1)
 
 
-@diffusion_router.get("/health")
-async def health():
-  """Warm-up endpoint: ensures the model is loaded, then returns immediately."""
-  await asyncio.to_thread(get_inference)
-  return {"status": "ok"}
-
-
 @diffusion_router.get("/newImage")
-async def generate_new_image(generator: Annotated[Generator, Depends(get_generator)]):
+async def generate_new_image(
+  generator: Annotated[Generator, Depends(get_generator)],
+):
   """
 
   Returns:
 
   """
+
   async def image_to_io():
     for image in generator:
       image_bytes = image_to_bytes(image)

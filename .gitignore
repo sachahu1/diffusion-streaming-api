@@ -152,4 +152,7 @@ auth.toml
 !index.rst
 
 new_checkpoint.pt
+latent_checkpoint.pt
+latent_unet.onnx
+latent_autoencoder.pt
 .aws-sam/

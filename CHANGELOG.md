@@ -2,6 +2,25 @@
 
 <!-- version list -->
 
+## v0.2.0-rc.1 (2026-11-25)
+
+### Build System
+
+- Ship the latent model files in the image
+  ([`630d970`](https://github.com/sachahu1/diffusion-streaming-api/commit/630d970d90f629f607948a9ef839d91a75980f6d))
+
+- **deps**: Bump the framework to 1.2.0rc2 and add onnxruntime
+  ([`053dc14`](https://github.com/sachahu1/diffusion-streaming-api/commit/053dc148de4465b59b05a8884655dd422f4a643e))
+
+### Features
+
+- Add a latent diffusion route
+  ([`1321fca`](https://github.com/sachahu1/diffusion-streaming-api/commit/1321fca6fb2a3807c0e1a6a6bbdc232016bfae0b))
+
+- **scripts**: Add checkpoint trimming and ONNX export
+  ([`da506a5`](https://github.com/sachahu1/diffusion-streaming-api/commit/da506a5142df1a986f6bf2faacda198b71b034af))
+
+
 ## v0.1.0 (2026-11-18)
 
 

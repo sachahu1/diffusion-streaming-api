@@ -8,3 +8,6 @@
 !uv.lock
 
 !new_checkpoint.pt
+!latent_checkpoint.pt
+!latent_unet.onnx
+!latent_autoencoder.pt
