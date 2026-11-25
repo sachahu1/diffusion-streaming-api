@@ -83,5 +83,8 @@ RUN pip install awslambdaric --target $work_dir
 COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.8.4 /lambda-adapter /opt/extensions/lambda-adapter
 
 COPY new_checkpoint.pt $work_dir/new_checkpoint.pt
+COPY latent_checkpoint.pt $work_dir/latent_checkpoint.pt
+COPY latent_unet.onnx $work_dir/latent_unet.onnx
+COPY latent_autoencoder.pt $work_dir/latent_autoencoder.pt
 
 CMD ["run_diffusion_streaming_api"]

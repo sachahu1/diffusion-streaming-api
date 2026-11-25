@@ -45,7 +45,7 @@ jobs:
       # An empty placeholder lets the Dockerfile's COPY succeed so we can
       # verify the image builds; the resulting image is not runnable.
       - name: Create placeholder checkpoint
-        run: touch new_checkpoint.pt
+        run: touch new_checkpoint.pt latent_checkpoint.pt latent_autoencoder.pt latent_unet.onnx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Build lambda image
