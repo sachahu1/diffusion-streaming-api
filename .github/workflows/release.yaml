@@ -77,6 +77,9 @@ jobs:
       AWS_OIDC_ROLE_ARN: arn:aws:iam::980416368045:role/DiffusionApiGitHubDeploy
       ECR_REPOSITORY: 980416368045.dkr.ecr.eu-west-2.amazonaws.com/diffusion-api
       MODEL_WEIGHTS_URI: s3://sachahu.com/model-weights/new_checkpoint.pt
+      LATENT_WEIGHTS_URI: s3://sachahu.com/model-weights/latent_checkpoint.pt
+      LATENT_AUTOENCODER_URI: s3://sachahu.com/model-weights/latent_autoencoder.pt
+      LATENT_UNET_URI: s3://sachahu.com/model-weights/latent_unet.onnx
       LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}
       IMAGE_TAG: v${{ needs.release.outputs.version }}
     steps:
@@ -94,7 +97,11 @@ jobs:
 
       # The weights are git-ignored; the Dockerfile COPYs them into the image.
       - name: Download model weights
-        run: aws s3 cp "$MODEL_WEIGHTS_URI" new_checkpoint.pt
+        run: |
+          aws s3 cp "$MODEL_WEIGHTS_URI" new_checkpoint.pt
+          aws s3 cp "$LATENT_WEIGHTS_URI" latent_checkpoint.pt
+          aws s3 cp "$LATENT_AUTOENCODER_URI" latent_autoencoder.pt
+          aws s3 cp "$LATENT_UNET_URI" latent_unet.onnx
 
       - name: Log in to ECR
         uses: aws-actions/amazon-ecr-login@v2

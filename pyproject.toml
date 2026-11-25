@@ -1,6 +1,6 @@
 [project]
 name = "diffusion-streaming-api"
-version = "0.1.0-rc.3"
+version = "0.1.0"
 description = "A minimal API to stream the generation of images using Diffusion."
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
@@ -11,7 +11,8 @@ dependencies = [
     "torch>=2.4.0,<3",
     "torchvision>=0.20.0,<0.21",
     "fastapi[standard]>=0.115.4,<0.116",
-    "diffusion-model-framework[inference]>=1.1.0,<2",
+    "diffusion-model-framework[inference]>=1.2.0rc2,<2",
+    "onnxruntime>=1.20,<2",
 ]
 
 [project.urls]
@@ -24,11 +25,13 @@ run_diffusion_streaming_api = "diffusion_streaming_api.cli:run"
 dev = [
     "ruff>=0.4.8,<0.5",
     "pre-commit>=3.7.1,<4",
+    "onnx>=1.17,<2",
 ]
 test = [
     "pytest>=7.0,<9",
     "pytest-mock>=3.14.0,<4",
     "coverage[toml]>=6.4.2,<7",
+    "onnx>=1.17,<2",
 ]
 documentation = [
     "Sphinx>=7.3.7,<8",
